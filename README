@@ -1,133 +1,116 @@
-# MedBook – Doctor Appointment Booking System
+# MedBook – Appointment Booking System
 
-Backend + frontend web application for managing doctor appointments.
+MedBook is a simple web-based doctor appointment booking system.  
+The project demonstrates a full-stack architecture using **Node.js**, **Express**, **MongoDB Atlas**, and a small **frontend UI** built with HTML/CSS/JavaScript
 
-This project was created as part of **Assignment 3 (Part 2)** for the Web Development course at Astana IT University.
+Team
+Aida Kentay – SE-2428
+Tomiris Kassymova – SE-2428
 
-- **Students:** Aida Kentay, Tomiris Kassymova  
-- **Group:** SE-2428  
+##  Live Deployment (Production)
+**URL:** https://medbook-mongo2.onrender.com
 
----
+The application supports full CRUD functionality through the web interface — no Postman needed during defense.
 
-## 1. Project Overview
 
-MedBook is a simple doctor appointment booking system.  
-It demonstrates a full-stack application with:
+## Project Features
 
-- Node.js + Express backend API
-- MongoDB database (appointments collection)
-- RESTful CRUD operations (Create, Read, Update, Delete)
-- Web UI that consumes the API using `fetch()`
-
-The focus is on **backend logic**, **MongoDB integration**, and **deployment**, not on complex UI design.
-
----
-
-## 2. Tech Stack
-
-- **Backend:** Node.js, Express.js
-- **Database:** MongoDB (MongoDB Atlas in production, local MongoDB for development)
-- **Frontend:** HTML, CSS, JavaScript (fetch API)
-- **Other:** dotenv for environment variables
+✔ Full CRUD operations for appointments  
+✔ REST API using Express  
+✔ MongoDB as a database (Atlas in production)  
+✔ Frontend UI using Fetch API  
+✔ Deployed to production (Render)  
+✔ Environment variables for secure configuration  
+✔ Clean and simple user interface  
 
 ---
 
-## 3. Features
+##  Data Model (MongoDB)
 
-- View all appointments in a table (loaded from `/api/appointments`)
-- Create a new appointment via a form
-- Update an existing appointment
-- Delete an appointment
-- Filter, sort, and project fields via query parameters
-- Proper HTTP status codes and validation
+Each appointment contains:
 
----
-
-## 4. API Endpoints
-
-All API routes are under /api/appointments.
-
-GET /api/appointments
-
-Return all appointments.
-
-Optional query params:
-
-doctor – filter by doctorName
-
-patient – filter by patientName
-
-sort – sort fields, e.g. date or -date,doctorName
-
-fields – projection, e.g. patientName,doctorName,date
-
-Example:
-
-/api/appointments?doctor=Dr.Smith&sort=-date&fields=patientName,doctorName,date
-
-GET /api/appointments/:id
-
-Return a single appointment by id.
-
-400 – invalid id
-
-404 – not found
-
-POST /api/appointments
-
-Create a new appointment.
-
-Body (JSON):
-
+```json
 {
-  "patientName": "John Doe",
-  "doctorName": "Dr. Smith",
-  "date": "2026-01-25T10:00"
+  "patientName": "Aida",
+  "doctorName": "Dr. Brown",
+  "date": "2026-02-01 10:00"
 }
+Documents are stored in the appointments collection.
 
-201 – created
+API Endpoints (Backend)
+Method	Endpoint	Description
+GET	/api/appointments	Get all appointments
+GET	/api/appointments/:id	Get appointment by id
+POST	/api/appointments	Create an appointment
+PUT	/api/appointments/:id	Update appointment
+DELETE	/api/appointments/:id	Delete appointment
 
-400 – missing required fields
+Frontend (Production UI)
+The UI allows users to:
 
-PUT /api/appointments/:id
+ View appointments in a table
+ Create new appointments (form)
+ Update existing appointments
+ Delete appointments
 
-Update an existing appointment.
+All actions communicate with the backend using the Fetch API.
 
-Same JSON body as POST.
-Returns 200 on success, 400 for invalid id, 404 if item not found.
+Environment Variables
+Local .env example:
+ini
 
-DELETE /api/appointments/:id
+PORT=3000
+MONGO_URI=mongodb://127.0.0.1:27017/medbook
+JWT_SECRET=secret_value_here
+Production (Render):
+Configured in Render dashboard:
 
-Delete an appointment by id.
+PORT
 
-Returns 200 on success, 400 for invalid id, 404 if not found.
+MONGO_URI
 
-## 5. Что осталось сделать (чек-лист)
+JWT_SECRET
 
-1. **Frontend UI** (если ещё нет):
-   - `public/index.html` — таблица + форма.
-   - `public/app.js` — `fetch` к `/api/appointments` (list/create/update/delete).
-2. **Проверить CRUD локально**:
-   - `npm start`
-   - Добавить / изменить / удалить запись через UI.
-3. **GitHub**:
-   - `.gitignore` с `node_modules` и `.env`.
-   - Репозиторий с понятными коммитами.
-4. **Деплой** (Render / другой хостинг) по шагам выше.
-5. **Обновить README**:
-   - Добавить реальный deployed URL.
-6. **Подготовиться к защите**:
-   - Последовательность:  
-     1) открыть URL → показать UI,  
-     2) создать запись,  
-     3) обновить,  
-     4) удалить,  
-     5) открыть DevTools → Network,  
-     6) показать, что запросы идут на `/api/appointments`.  
-   - Уметь ответить коротко:
-     - что такое `Express`,
-     - что такое `MongoDB`,
-     - что такое `CRUD`,
-     - зачем `process.env.PORT` и `process.env.MONGO_URI`.
+.env is not pushed to GitHub for security reasons.
 
-RUN: npm start
+Technologies Used
+Node.js
+
+Express
+
+MongoDB Atlas
+
+Fetch API
+
+Render (Deployment)
+
+HTML / CSS / JavaScript
+
+Local Installation
+bash
+git clone https://github.com/akentay/medbook-mongo2.git
+cd medbook-mongo2
+npm install
+Create .env and run:
+
+bash
+npm start
+Then open:
+
+arduino
+http://localhost:3000
+Deployment Notes (Render)
+Production requires:
+
+Working MongoDB Atlas connection
+Environment variables configured
+Server must use process.env.PORT
+No Postman required for defense
+
+
+Course Context
+This project was created for WEB Technologies 2
+Assignment: Backend + MongoDB + Deployment (Part 3.2)
+Objective: Full CRUD + Deployment + UI + MongoDB Atlas
+
+yaml
