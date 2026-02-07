@@ -1,133 +1,76 @@
-# MedBook – Doctor Appointment Booking System
+# MedBook – Appointments Web App (Assignment 4)
 
-Backend + frontend web application for managing doctor appointments.
+This project is a Node.js + Express + MongoDB web application with a production-style UI.
 
-This project was created as part of **Assignment 3 (Part 2)** for the Web Development course at Astana IT University.
+Students:
+Aida Kentay 
+Tomiris Kassymova
 
-- **Students:** Aida Kentay, Tomiris Kassymova  
-- **Group:** SE-2428  
+Group: SE-2428
 
----
+## Features
+- Full CRUD for Appointments via Web UI
+- Sessions-based authentication (express-session)
+- Session stored in MongoDB (connect-mongo)
+- Protected write operations (POST / PUT / DELETE)
+- Password hashing with bcrypt
+- Secure cookies (HttpOnly, Secure in production)
+- Validation + safe error handling
 
-## 1. Project Overview
+## Tech Stack
+- Node.js
+- Express.js
+- MongoDB + Mongoose
+- express-session + connect-mongo
+- bcrypt
+- HTML/CSS/JS (Vanilla)
 
-MedBook is a simple doctor appointment booking system.  
-It demonstrates a full-stack application with:
+## Domain Entity
+Appointments contain:
+- patientName
+- doctorName
+- date
+- time
+- department
+- reason
+- status (scheduled / completed / cancelled)
+- phone
 
-- Node.js + Express backend API
-- MongoDB database (appointments collection)
-- RESTful CRUD operations (Create, Read, Update, Delete)
-- Web UI that consumes the API using `fetch()`
+## Demo Requirements (Defense)
+- Open the deployed URL
+- Show CRUD via UI
+- Show login + sessions
+- Show that unauthorized users cannot create/update/delete
 
-The focus is on **backend logic**, **MongoDB integration**, and **deployment**, not on complex UI design.
+## Test User
+Email: admin@medbook.com  
+Password: admin123
 
----
+## Environment Variables
+Create a `.env` file:
 
-## 2. Tech Stack
+MONGO_URI=your_mongodb_connection_string
+SESSION_SECRET=your_session_secret
+NODE_ENV=development
+PORT=3000
 
-- **Backend:** Node.js, Express.js
-- **Database:** MongoDB (MongoDB Atlas in production, local MongoDB for development)
-- **Frontend:** HTML, CSS, JavaScript (fetch API)
-- **Other:** dotenv for environment variables
 
----
+## Run Locally
+```bash
+npm install
+node seed_user.js
+node seed_appointments.js
+npm start
 
-## 3. Features
 
-- View all appointments in a table (loaded from `/api/appointments`)
-- Create a new appointment via a form
-- Update an existing appointment
-- Delete an appointment
-- Filter, sort, and project fields via query parameters
-- Proper HTTP status codes and validation
+Open:
+http://localhost:3000
 
----
 
-## 4. API Endpoints
+Сохрани → потом:
 
-All API routes are under /api/appointments.
+```bash
+git add README.md
+git commit -m "Add README"
+git push
 
-GET /api/appointments
-
-Return all appointments.
-
-Optional query params:
-
-doctor – filter by doctorName
-
-patient – filter by patientName
-
-sort – sort fields, e.g. date or -date,doctorName
-
-fields – projection, e.g. patientName,doctorName,date
-
-Example:
-
-/api/appointments?doctor=Dr.Smith&sort=-date&fields=patientName,doctorName,date
-
-GET /api/appointments/:id
-
-Return a single appointment by id.
-
-400 – invalid id
-
-404 – not found
-
-POST /api/appointments
-
-Create a new appointment.
-
-Body (JSON):
-
-{
-  "patientName": "John Doe",
-  "doctorName": "Dr. Smith",
-  "date": "2026-01-25T10:00"
-}
-
-201 – created
-
-400 – missing required fields
-
-PUT /api/appointments/:id
-
-Update an existing appointment.
-
-Same JSON body as POST.
-Returns 200 on success, 400 for invalid id, 404 if item not found.
-
-DELETE /api/appointments/:id
-
-Delete an appointment by id.
-
-Returns 200 on success, 400 for invalid id, 404 if not found.
-
-## 5. Что осталось сделать (чек-лист)
-
-1. **Frontend UI** (если ещё нет):
-   - `public/index.html` — таблица + форма.
-   - `public/app.js` — `fetch` к `/api/appointments` (list/create/update/delete).
-2. **Проверить CRUD локально**:
-   - `npm start`
-   - Добавить / изменить / удалить запись через UI.
-3. **GitHub**:
-   - `.gitignore` с `node_modules` и `.env`.
-   - Репозиторий с понятными коммитами.
-4. **Деплой** (Render / другой хостинг) по шагам выше.
-5. **Обновить README**:
-   - Добавить реальный deployed URL.
-6. **Подготовиться к защите**:
-   - Последовательность:  
-     1) открыть URL → показать UI,  
-     2) создать запись,  
-     3) обновить,  
-     4) удалить,  
-     5) открыть DevTools → Network,  
-     6) показать, что запросы идут на `/api/appointments`.  
-   - Уметь ответить коротко:
-     - что такое `Express`,
-     - что такое `MongoDB`,
-     - что такое `CRUD`,
-     - зачем `process.env.PORT` и `process.env.MONGO_URI`.
-
-RUN: npm start
