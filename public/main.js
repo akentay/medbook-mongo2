@@ -1,152 +1,179 @@
-const API_BASE = '/api/appointments';
+const tableBody = document.getElementById("tableBody");
+const authStatus = document.getElementById("authStatus");
+const loginForm = document.getElementById("loginForm");
+const logoutBtn = document.getElementById("logoutBtn");
+const createForm = document.getElementById("createForm");
 
-const form = document.getElementById('appointment-form');
-const idInput = document.getElementById('appointment-id');
-const patientInput = document.getElementById('patientName');
-const doctorInput = document.getElementById('doctorName');
-const dateInput = document.getElementById('date');
-const cancelEditBtn = document.getElementById('cancel-edit');
-const tableBody = document.querySelector('#appointments-table tbody');
-const emptyMessage = document.getElementById('empty-message');
+let isAuthed = false;
+let editingId = null;
 
-let isEditing = false;
-
-async function loadAppointments() {
-  const res = await fetch(API_BASE);
-  const data = await res.json();
-  renderTable(data);
+// ---------- HELPERS ----------
+async function api(url, options = {}) {
+  const res = await fetch(url, {
+    credentials: "same-origin",   
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+  const data = await res.json().catch(() => ({}));
+  return { res, data };
 }
 
-function renderTable(items) {
-  tableBody.innerHTML = '';
 
-  if (!items.length) {
-    emptyMessage.style.display = 'block';
-    return;
+// ---------- AUTH ----------
+async function checkAuth() {
+  const { data } = await api("/api/auth/me");
+  if (data.authenticated) {
+    isAuthed = true;
+    authStatus.textContent = "Logged in as " + data.user.email;
+    loginForm.style.display = "none";
+    logoutBtn.style.display = "inline-block";
+    createForm.style.display = "block";
+  } else {
+    isAuthed = false;
+    authStatus.textContent = "Not logged in";
+    loginForm.style.display = "block";
+    logoutBtn.style.display = "none";
+    createForm.style.display = "none";
   }
-  emptyMessage.style.display = 'none';
+  loadAppointments();
+}
 
-  items.forEach((item) => {
-    const tr = document.createElement('tr');
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-    const tdPatient = document.createElement('td');
-    tdPatient.textContent = item.patientName;
+  const { res } = await api("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
 
-    const tdDoctor = document.createElement('td');
-    tdDoctor.textContent = item.doctorName;
+  if (!res.ok) return alert("Invalid credentials");
+  checkAuth();
+});
 
-    const tdDate = document.createElement('td');
-    tdDate.textContent = item.date;
+logoutBtn.addEventListener("click", async () => {
+  await api("/api/auth/logout", { method: "POST" });
+  checkAuth();
+});
 
-    const tdActions = document.createElement('td');
-    const editBtn = document.createElement('button');
-    editBtn.textContent = 'Edit';
-    editBtn.className = 'btn small';
-    editBtn.addEventListener('click', () => startEdit(item));
+// ---------- CRUD ----------
+async function loadAppointments() {
+  const { data } = await api("/api/appointments");
+  window.currentAppointments = data;
+  tableBody.innerHTML = "";
 
-    const delBtn = document.createElement('button');
-    delBtn.textContent = 'Delete';
-    delBtn.className = 'btn small danger';
-    delBtn.addEventListener('click', () => deleteAppointment(item._id));
+  // FILTER + SORT
+const statusFilter = document.getElementById("statusFilter")?.value || "all";
+const sortBy = document.getElementById("sortBy")?.value || "newest";
 
-    tdActions.appendChild(editBtn);
-    tdActions.appendChild(delBtn);
+let items = [...data];
 
-    tr.appendChild(tdPatient);
-    tr.appendChild(tdDoctor);
-    tr.appendChild(tdDate);
-    tr.appendChild(tdActions);
+// filter
+if (statusFilter !== "all") {
+  items = items.filter(a => a.status === statusFilter);
+}
+
+// sort by date
+items.sort((a, b) => {
+  const da = new Date(a.date);
+  const db = new Date(b.date);
+  return sortBy === "newest" ? db - da : da - db;
+});
+
+window.currentAppointments = items;
+
+
+
+  items.forEach(item => {
+    const tr = document.createElement("tr");
+
+    const actions = isAuthed
+  ? `
+      <button onclick="startEdit('${item._id}')">Edit</button>
+      <button class="danger" onclick="deleteAppointment('${item._id}')">Delete</button>
+    `
+  : `<span style="color:#888">Login to edit</span>`;
+
+
+    tr.innerHTML = `
+      <td>${item.patientName}</td>
+      <td>${item.doctorName}</td>
+      <td>${item.date}</td>
+      <td>${actions}</td>
+    `;
 
     tableBody.appendChild(tr);
   });
 }
 
-function resetForm() {
-  isEditing = false;
-  idInput.value = '';
-  patientInput.value = '';
-  doctorInput.value = '';
-  dateInput.value = '';
-  cancelEditBtn.classList.add('hidden');
-}
-
-function startEdit(item) {
-  isEditing = true;
-  idInput.value = item._id;
-  patientInput.value = item.patientName;
-  doctorInput.value = item.doctorName;
-  dateInput.value = item.date;
-  cancelEditBtn.classList.remove('hidden');
-}
-
-cancelEditBtn.addEventListener('click', () => {
-  resetForm();
-});
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
+async function createAppointment() {
   const body = {
-    patientName: patientInput.value.trim(),
-    doctorName: doctorInput.value.trim(),
-    date: dateInput.value
+    patientName: document.getElementById("patientName").value,
+    doctorName: document.getElementById("doctorName").value,
+    date: document.getElementById("date").value,
+    time: document.getElementById("time").value,
+    department: document.getElementById("department").value,
+    reason: document.getElementById("reason").value,
+    status: document.getElementById("status").value,
+    phone: document.getElementById("phone").value,
   };
 
-  if (!body.patientName || !body.doctorName || !body.date) {
-    alert('All fields are required');
-    return;
-  }
+  const url = editingId ? `/api/appointments/${editingId}` : "/api/appointments";
+const method = editingId ? "PUT" : "POST";
 
-  try {
-    if (isEditing && idInput.value) {
-      // UPDATE
-      const res = await fetch(`${API_BASE}/${idInput.value}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        alert('Update failed: ' + (err.error || res.status));
-      }
-    } else {
-      // CREATE
-      const res = await fetch(API_BASE, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-
-      if (res.status !== 201) {
-        const err = await res.json().catch(() => ({}));
-        alert('Create failed: ' + (err.error || res.status));
-      }
-    }
-
-    resetForm();
-    await loadAppointments();
-  } catch (err) {
-    console.error(err);
-    alert('Network error');
-  }
+const { res, data } = await api(url, {
+  method,
+  body: JSON.stringify(body),
 });
 
-async function deleteAppointment(id) {
-  if (!confirm('Delete this appointment?')) return;
 
-  try {
-    const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      alert('Delete failed: ' + (err.error || res.status));
-    } else {
-      await loadAppointments();
-    }
-  } catch (err) {
-    console.error(err);
-    alert('Network error');
-  }
+  if (!res.ok) return alert(data.error || "Invalid data");
+  cancelEdit();
+  loadAppointments();
 }
 
-document.addEventListener('DOMContentLoaded', loadAppointments);
+
+async function deleteAppointment(id) {
+  const { res } = await api(`/api/appointments/${id}`, { method: "DELETE" });
+  if (!res.ok) return alert("Unauthorized");
+  loadAppointments();
+}
+function startEdit(id) {
+  const row = window.currentAppointments.find(a => a._id === id);
+  if (!row) return;
+
+  editingId = id;
+
+  document.getElementById("patientName").value = row.patientName;
+  document.getElementById("doctorName").value = row.doctorName;
+  document.getElementById("date").value = row.date;
+  document.getElementById("time").value = row.time;
+  document.getElementById("department").value = row.department;
+  document.getElementById("reason").value = row.reason;
+  document.getElementById("status").value = row.status;
+  document.getElementById("phone").value = row.phone;
+
+  document.getElementById("createBtn").textContent = "Update";
+  document.getElementById("cancelEditBtn").style.display = "inline-block";
+}
+
+function cancelEdit() {
+  editingId = null;
+
+  document.getElementById("patientName").value = "";
+  document.getElementById("doctorName").value = "";
+  document.getElementById("date").value = "";
+  document.getElementById("time").value = "";
+  document.getElementById("department").value = "";
+  document.getElementById("reason").value = "";
+  document.getElementById("status").value = "";
+  document.getElementById("phone").value = "";
+
+  document.getElementById("createBtn").textContent = "Create";
+  document.getElementById("cancelEditBtn").style.display = "none";
+}
+
+
+// START
+checkAuth();

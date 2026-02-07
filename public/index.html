@@ -2,66 +2,168 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>MedBook – Appointments</title>
-  <link rel="stylesheet" href="/style.css" />
+  <title>MedBook App</title>
+  
 </head>
 <body>
-  <div class="container">
-    <header class="header">
-      <h1>MedBook – Doctor Appointments</h1>
-      <p class="tagline">
-        Simple interface to create, view, update and delete appointments.
-      </p>
-    </header>
 
-    <main>
-      <section class="card">
-        <h2>Create / Edit Appointment</h2>
-        <form id="appointment-form">
-          <input type="hidden" id="appointment-id" />
+<h2>MedBook – Appointments</h2>
 
-          <label for="patientName">Patient Name</label>
-          <input type="text" id="patientName" required />
+<!-- LOGIN -->
+<div id="authBox">
+  <p id="authStatus">Checking auth...</p>
 
-          <label for="doctorName">Doctor Name</label>
-          <input type="text" id="doctorName" required />
+  <form id="loginForm">
+    <input id="email" type="email" placeholder="email" required />
+    <input id="password" type="password" placeholder="password" required />
+    <button type="submit">Login</button>
+  </form>
 
-          <label for="date">Date</label>
-          <input type="date" id="date" required />
+  <button id="logoutBtn" style="display:none;">Logout</button>
+</div>
 
-          <div class="form-actions">
-            <button type="submit" class="btn primary">Save</button>
-            <button type="button" id="cancel-edit" class="btn secondary hidden">
-              Cancel Edit
-            </button>
-          </div>
-        </form>
-      </section>
+<hr />
 
-      <section class="card">
-        <h2>Appointments List</h2>
-        <table class="table" id="appointments-table">
-          <thead>
-            <tr>
-              <th>Patient</th>
-              <th>Doctor</th>
-              <th>Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-          </tbody>
-        </table>
-        <p id="empty-message" class="muted">No appointments yet.</p>
-      </section>
-    </main>
+<!-- CREATE -->
+<div id="createForm" style="display:none;">
+  <h3>Create appointment</h3>
+  <input id="patientName" placeholder="Patient name" />
+  <input id="doctorName" placeholder="Doctor name" />
+  <input id="date" placeholder="Date (YYYY-MM-DD)" />
+  <input id="time" placeholder="Time (HH:MM)" />
+  <input id="department" placeholder="Department" />
+  <input id="reason" placeholder="Reason" />
+  <input id="status" placeholder="scheduled / completed / cancelled" />
+  <input id="phone" placeholder="Phone" />
+  <button type="button" id="createBtn" onclick="createAppointment()">Create</button>
+  <button type="button" id="cancelEditBtn" onclick="cancelEdit()" style="display:none;">Cancel</button>
+</div>
 
-    <footer class="footer">
-      <p>MedBook • Assignment 3 – Part 2 • MongoDB + Express</p>
-      <p>Lalaland</p>
-    </footer>
-  </div>
+<div id="controls" style="margin: 14px 0;">
+  <select id="statusFilter" onchange="loadAppointments()">
+    <option value="all">All statuses</option>
+    <option value="scheduled">Scheduled</option>
+    <option value="completed">Completed</option>
+    <option value="cancelled">Cancelled</option>
+  </select>
 
-  <script src="/main.js"></script>
+  <select id="sortBy" onchange="loadAppointments()">
+    <option value="newest">Sort: Newest first</option>
+    <option value="oldest">Sort: Oldest first</option>
+  </select>
+</div>
+
+
+<!-- TABLE -->
+<table>
+  <thead>
+    <tr>
+      <th>Patient</th>
+      <th>Doctor</th>
+      <th>Date</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 30px;
+    background: #f6f7fb;
+    color: #222;
+  }
+
+  h2 {
+    margin-bottom: 10px;
+  }
+
+  #authBox {
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    margin-bottom: 18px;
+    max-width: 650px;
+  }
+
+  input {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    outline: none;
+    min-width: 200px;
+  }
+
+  input:focus {
+    border-color: #7c3aed;
+  }
+
+  button {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    background: #7c3aed;
+    color: white;
+  }
+
+  button:hover {
+    opacity: 0.9;
+  }
+
+  hr {
+    border: none;
+    height: 1px;
+    background: #e7e7e7;
+    margin: 20px 0;
+  }
+
+  #createForm {
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    margin-bottom: 18px;
+    max-width: 900px;
+  }
+
+  #createForm input {
+    margin: 6px 6px 6px 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  }
+
+  th, td {
+    padding: 14px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+  }
+
+  th {
+    background: #fafafa;
+    font-weight: 700;
+  }
+
+  td span {
+    font-size: 13px;
+  }
+
+  .danger {
+    background: #ef4444;
+  }
+</style>
+
+
+<script src="main.js"></script>
 </body>
 </html>
